@@ -3,24 +3,19 @@ on:
   push:                                                                                                                                                                                                
     branches:                                                                                                                                                                                          
       - master 
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     steps:
     - uses: "actions/checkout@v2"
     - run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_ENV
     - run: |
         sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi build-essential git python3-pip
     - run: "pip3 install -U git+https://github.com/TuxSH/firmtool.git"
-    - run: "make"
-      env:
-        CC: "arm-none-eabi-gcc"
-    - uses: "marvinpinto/action-automatic-releases@latest"
+    - run: "env CC=arm-none-eabi-gcc make"
+    - uses: "actions/upload-artifact@v7.0.1"
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "Development build ${{ env.SHORT_SHA }}"
-        files: |
-          firm_linux_loader.firm
+        path: firm_linux_loader.firm
+        archive: false
